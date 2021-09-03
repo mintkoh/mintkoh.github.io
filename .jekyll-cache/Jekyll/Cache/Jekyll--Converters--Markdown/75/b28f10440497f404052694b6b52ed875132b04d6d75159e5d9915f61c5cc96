@@ -1,0 +1,66 @@
+I"�<h2 id="rootme---tryhackme-writeup">RootMe - TryHackMe Writeup</h2>
+<p><a href="https://tryhackme.com/room/rrootme" target="_blank">RootMe</a> is a TryHackMe’s room made by the amazing <a href="https://tryhackme.com/p/ReddyyZ" target="_blank">ReddyyZ</a>. The difficult level is easy and is a Linux machine. 
+In this room, I used many tools like Nmap, WhatWeb, Wfuzz, or Pentestmonkey’s reverse shell for the file upload bypass vulnerability found.</p>
+
+<p>This first article explains how I obtained the user and root flag while taking advantage of the vulnerabilities found in the system.</p>
+
+<p>Machine: Linux<br />
+Difficulty: Easy<br />
+Platform: TryHackMe<br />
+Tags: linux, file upload bypass, suid</p>
+
+<h2 id="reconnaissance">Reconnaissance</h2>
+<h3 id="nmap">Nmap</h3>
+<p>With the nmap command <code class="language-plaintext highlighter-rouge">nmap -p- --open -T5 -v -n &lt;ip_address&gt;</code> I found port 22 and 80 open. Then I run <code class="language-plaintext highlighter-rouge">nmap -sC -sV -p22,80 &lt;ip_address&gt;</code> to use the default scripts to scan the services and see its versions, obtaining the following result:</p>
+
+<p><img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled.png" alt="nmap_result" /></p>
+
+<h3 id="whatweb-and-wappalyzer">Whatweb and Wappalyzer</h3>
+<p>I executed <code class="language-plaintext highlighter-rouge">whatweb https://&lt;ip_address&gt;</code> to get more information about the webserver in port 80:</p>
+
+<p><img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled 1.png" alt="nmap_result" /></p>
+
+<p>Another option is Wappalyzer, which also uncovers the technologies used on websites:</p>
+
+<p><img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled 3.png" alt="nmap_result" /></p>
+
+<h3 id="wfuzz">Wfuzz</h3>
+
+<p>This tool is used to search for hidden content, such as files and directories, which I did use with the following command and found the resources called css, js, panel, and uploads:
+<code class="language-plaintext highlighter-rouge">wfuzz -c -L -t 400 --hc=404 -w /usr/share/wordlists/dirb/common.txt http://&lt;ip_address&gt;/FUZZ</code></p>
+
+<p><img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled 2.png" alt="nmap_result" /></p>
+
+<p>There was a file upload page in /panel and /uploads possibly show the files uploaded on the server.</p>
+
+<h2 id="exploitation">Exploitation</h2>
+
+<p>So the first thing that came to mind was to try if the site is vulnerable to file upload bypass vulnerability and upload a reverse shell to enter the system.</p>
+
+<p><img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled 4.png" alt="nmap_result" /></p>
+
+<p>I downloaded <a href="https://github.com/pentestmonkey/php-reverse-shell/blob/master/php-reverse-shell.php" target="_blank">Pentestmonkey’s reverse shell file</a> because the website uses PHP, edited the file to changed the IP address and port to my Kali’s IP address and the port I used to establish a reverse shell listener. The listener was set with <code class="language-plaintext highlighter-rouge">nc -lvnp &lt;port&gt;</code>.
+I tried to upload the file, but the server rejected it.  I substituted the .php format into .phtml, and it worked!.</p>
+
+<p><img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled 5.png" alt="nmap_result" />
+<img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled 6.png" alt="nmap_result" /></p>
+
+<p>I went to <code class="language-plaintext highlighter-rouge">http://&lt;ip_address&gt;/uploads/php_reverse_shell.phtml</code> in the browser to execute it in the server and got a reverse shell being user www-data:</p>
+
+<p><img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled 7.png" alt="nmap_result" /></p>
+
+<p>The user flag was found with <code class="language-plaintext highlighter-rouge">find / -name user.txt 2&gt;/dev/null</code>.</p>
+
+<h2 id="privilege-escalation">Privilege escalation</h2>
+
+<p>I didn’t end here. The next step was to become the user with the most privileges, the root user. And to make it happen, I searched binaries with the SUID bit set:
+<code class="language-plaintext highlighter-rouge">find / -perm -4000 2&gt;/dev/null</code></p>
+
+<p><img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled 9.png" alt="nmap_result" /></p>
+
+<p>Python was on the list, so I searched for the command to take advantage of the SUID file in <a href="https://gtfobins.github.io/" target="_blank">GTFOBins</a> and got root: <code class="language-plaintext highlighter-rouge">python -c 'import os; os.execl("/bin/sh", "sh", "-p")'</code></p>
+
+<p><img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled 10.png" alt="nmap_result" /></p>
+
+<p>See ya!</p>
+:ET

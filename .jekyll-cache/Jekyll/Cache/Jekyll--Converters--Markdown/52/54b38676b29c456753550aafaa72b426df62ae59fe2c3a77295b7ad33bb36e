@@ -1,0 +1,38 @@
+I"�	<h2 id="rootme---tryhackme-writeup">RootMe - TryHackMe Writeup</h2>
+<p><a href="https://tryhackme.com/room/rrootme" target="_blank">RootMe</a> is a TryHackMe’s room made by the amazing <a href="https://tryhackme.com/p/ReddyyZ" target="_blank">ReddyyZ</a>. The difficult level is easy and is a Linux machine. 
+In this room, I used many tools like Nmap, WhatWeb, Wfuzz, or Pentestmonkey’s reverse shell for the file upload bypass vulnerability found.</p>
+
+<p>This first article explains how I obtained the user and root flag while taking advantage of the vulnerabilities found in the system.</p>
+
+<p>Machine: Linux<br />
+Difficulty: Easy<br />
+Platform: TryHackMe<br />
+Tags: linux, file upload bypass, suid</p>
+
+<h2 id="reconnaissance">Reconnaissance</h2>
+<h3 id="nmap">Nmap</h3>
+<p>With the nmap command <code class="language-plaintext highlighter-rouge">nmap -p- --open -T5 -v -n &lt;ip_address&gt;</code> I found port 22 and 80 open. Then I run <code class="language-plaintext highlighter-rouge">nmap -sC -sV -p22,80 &lt;ip_address&gt;</code> to use the default scripts to scan the services and see its versions, obtaining the following result:</p>
+
+<p><img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled.png" alt="nmap_result" /></p>
+
+<h3 id="whatweb-and-wappalyzer">Whatweb and Wappalyzer</h3>
+<p>I executed <code class="language-plaintext highlighter-rouge">whatweb https://&lt;ip_address&gt;</code> to get more information about the webserver in port 80:</p>
+
+<p><img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled 1.png" alt="nmap_result" /></p>
+
+<p>Another option is Wappalyzer, which also uncovers the technologies used on websites:</p>
+
+<p><img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled 3.png" alt="nmap_result" /></p>
+
+<h3 id="wfuzz">Wfuzz</h3>
+
+<p>This tool is used to search for hidden content, such as files and directories, which I did use with the following command and found the resources called css, js, panel, and uploads:`wfuzz -c -L -t 400 –hc=404 -w /usr/share/wordlists/dirb/common.txt http://<ip_address>/FUZZ`</ip_address></p>
+
+<p><img src="/assets/images/2021-09-02-rootme-tryhackme-writeup/Untitled 2.png" alt="nmap_result" /></p>
+
+<p>There was a file upload page in /panel and in /uploads possibly show the files uploaded.</p>
+
+<h2 id="exploitation">Exploitation</h2>
+
+<p>So the first thing that came to mind was to try if the site is vulnerable to file upload bypass vulnerability and upload a reverse shell to enter the system.</p>
+:ET

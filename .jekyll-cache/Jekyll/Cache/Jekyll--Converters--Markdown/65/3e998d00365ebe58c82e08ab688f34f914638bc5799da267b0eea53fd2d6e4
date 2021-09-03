@@ -1,0 +1,4 @@
+I"�<h2 id="rootme---tryhackme-writeup">RootMe - TryHackMe Writeup</h2>
+<p><a href="https://tryhackme.com/room/rrootme" target="_blank">RootMe</a> is a TryHackMe’s room made by the amazing <a href="https://tryhackme.com/p/ReddyyZ" target="_blank">ReddyyZ</a>. The difficult level is easy and is a Linux machine. 
+In this room, I used many tools like Nmap, WhatWeb, Wfuzz, or Pentestmonkey’s reverse shell for the file upload bypass vulnerability found.</p>
+:ET
